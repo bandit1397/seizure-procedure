@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>압수절차</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: #f5f7fa;
+    color: #222;
+    line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 1rem 0.9rem 4rem; }
+
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    margin: 0.6rem 0 0.25rem;
+    color: #1b3a5b;
+  }
+  .lead {
+    text-align: center;
+    color: #666;
+    font-size: 0.86rem;
+    margin: 0 0 1rem;
+  }
+
+  /* --- 진행률 --- */
+  .progress-wrap { margin: 0 0 1.4rem; }
+  .progress {
+    background: #e3e9f2;
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #1b6fd6;
+    transition: width .25s ease;
+  }
+  .progress-label {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #888;
+    margin: 0.4rem 0 0;
+  }
+
+  /* --- 단계 카드 --- */
+  .step {
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.9rem 0.95rem 1rem;
+    margin-bottom: 0.9rem;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+    transition: opacity .2s ease;
+  }
+  .step.done { opacity: 0.55; }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+  }
+  .step-head input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: #1b6fd6;
+    flex: 0 0 auto;
+  }
+  .num {
+    flex: 0 0 auto;
+    display: inline-flex;
+    width: 1.5rem; height: 1.5rem;
+    align-items: center; justify-content: center;
+    background: #1b6fd6; color: #fff;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .step.done .num { background: #8aa6bf; }
+  .title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #1b3a5b;
+  }
+  .step.done .title { text-decoration: line-through; color: #8aa6bf; }
+
+  .sub-progress {
+    font-size: 0.76rem;
+    color: #9aa7b5;
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
+  /* --- 경로 목록 --- */
+  ul.path {
+    list-style: none;
+    margin: 0.7rem 0 0;
+    padding: 0;
+  }
+  ul.path li {
+    position: relative;
+    padding-left: 1.3rem;
+    margin: 0.35rem 0;
+    font-size: 0.86rem;
+    color: #333;
+    word-break: keep-all;
+  }
+  ul.path li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #1b6fd6;
+    font-weight: 700;
+  }
+  ul.path li.note {
+    color: #b3261e;
+    font-weight: 600;
+    font-size: 0.82rem;
+  }
+  ul.path li.note::before {
+    content: "※";
+    color: #b3261e;
+  }
+  ul.path .arrow { color: #9aa7b5; margin: 0 0.15rem; font-weight: 400; }
+
+  /* --- 5단계 하위 서식 --- */
+  .sub-list { margin-top: 0.8rem; }
+  details.sub {
+    background: #f3f6fb;
+    border: 1px solid #dde6f2;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    margin-bottom: 0.55rem;
+  }
+  details.sub[open] { background: #eef3fb; }
+  details.sub summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1b3a5b;
+    list-style: none;
+  }
+  details.sub summary::-webkit-details-marker { display: none; }
+  details.sub summary::after {
+    content: "▾";
+    margin-left: auto;
+    color: #9aa7b5;
+    transition: transform .15s ease;
+  }
+  details.sub[open] summary::after { transform: rotate(180deg); }
+  details.sub summary input[type="checkbox"] {
+    width: 1.05rem;
+    height: 1.05rem;
+    accent-color: #1b6fd6;
+    flex: 0 0 auto;
+  }
+  details.sub.done summary .sub-title { text-decoration: line-through; color: #8aa6bf; }
+  .sub-num {
+    flex: 0 0 auto;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #fff;
+    background: #4c7fb3;
+    border-radius: 5px;
+    padding: 0.08rem 0.4rem;
+  }
+  details.sub.done .sub-num { background: #b7c4d3; }
+
+  .reset {
+    display: block; margin: 1.6rem auto 0;
+    background: none; border: none; color: #1b6fd6;
+    font-size: 0.85rem; cursor: pointer; text-decoration: underline;
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.25rem; }
+    .step { padding: 0.8rem 0.8rem 0.9rem; }
+    .title { font-size: 0.92rem; }
+    ul.path li { font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔏 압수절차</h1>
+  <p class="lead">KICS 압수물 처리 화면 조작 순서 · 완료한 단계를 체크하세요.</p>
+
+  <div class="progress-wrap">
+    <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="progress-label" id="progressLabel">0 / 9 완료</p>
+  </div>
+
+  <!-- 1단계 -->
+  <div class="step" data-step="1">
+    <label class="step-head">
+      <input type="checkbox" class="chk" data-key="1">
+      <span class="num">1</span>
+      <span class="title">해당사건 압수물 연결</span>
+    </label>
+    <ul class="path">
+      <li>KICS <span class="arrow">›</span> 사건처리 <span class="arrow">›</span> 접수배당 <span class="arrow">›</span> 사건목록 <span class="arrow">›</span> 지역경찰사건목록</li>
+      <li>(해당사건 우클릭)</li>
+      <li>우클릭메뉴 <span class="arrow">›</span> 압수물</li>
+    </ul>
+  </div>
+
+  <!-- 2단계 -->
+  <div class="step" data-step="2">
+    <label class="step-head">
+      <input type="checkbox" class="chk" data-key="2">
+      <span class="num">2</span>
+      <span class="title">압수대상자 등록</span>
+    </label>
+    <ul class="path">
+      <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> 대상자관리</li>
+      <li>KICS 대상자목록 <span class="arrow">›</span> 압수대상자 체크박스 체크 <span class="arrow">›</span> 압수대상자 등록</li>
+      <li>저장</li>
+      <li>닫기</li>
+    </ul>
+  </div>
+
+  <!-- 3단계 -->
+  <div class="step" data-step="3">
+    <label class="step-head">
+      <input type="checkbox" class="chk" data-key="3">
+      <span class="num">3</span>
+      <span class="title">압수물 등록</span>
+    </label>
+    <ul class="path">
+      <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> 행추가</li>
+      <li>필수항목 입력 <span class="arrow">›</span> 저장</li>
+      <li>(팝업창) 확인</li>
+    </ul>
+  </div>
+
+  <!-- 4단계 -->
+  <div class="step" data-step="4">
+    <label class="step-head">
+      <input type="checkbox" class="chk" data-key="4">
+      <span class="num">4</span>
+      <span class="title">압수부 등재</span>
+    </label>
+    <ul class="path">
+      <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> 대상 압수물 체크박스 체크 <span class="arrow">›</span> 압수업무선택(드롭다운) <span class="arrow">›</span> 압수물 등재(클릭)</li>
+      <li>(압수물 등재하겠습니까 팝업창) 확인</li>
+      <li>(메시지) 확인</li>
+      <li class="note">압수물 목록 상태가 '승인'으로 변경됨</li>
+    </ul>
+  </div>
+
+  <!-- 5단계: 압수서류작성 -->
+  <div class="step" data-step="5">
+    <div class="step-head" style="cursor:default;">
+      <span class="num">5</span>
+      <span class="title">압수서류작성</span>
+      <span class="sub-progress" id="subProgress">0 / 5</span>
+    </div>
+
+    <div class="sub-list">
+
+      <details class="sub" data-sub="5-1">
+        <summary>
+          <input type="checkbox" class="chk-sub" data-key="5-1" onclick="event.stopPropagation()">
+          <span class="sub-num">5-1</span>
+          <span class="sub-title">압수조서 (편철)</span>
+        </summary>
+        <ul class="path">
+          <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> (대상 압수물 체크박스 체크) <span class="arrow">›</span> 압수관련서식(드롭다운) <span class="arrow">›</span> 압수조서(클릭) <span class="arrow">›</span> 열기</li>
+          <li>(압수경위 등 기본정보 입력)</li>
+          <li>(상단) 진술자 확인(클릭) <span class="arrow">›</span> (팝업창 상대방 열람)</li>
+          <li>(참여인 서명 또는 날인으로 커서이동) 자필기재(클릭)</li>
+          <li>(서명패드) 서명 <span class="arrow">›</span> 확인</li>
+          <li>사법경찰관(리) 입력 (서식의 명의자 및 참여 경찰관)</li>
+          <li class="note">서식의 명의자 및 참여경찰관(추가명의자)의 행정전자서명 필요</li>
+          <li>편철</li>
+          <li>행정전자서명관리 <span class="arrow">›</span> (추가명의자) <span class="arrow">›</span> 추가</li>
+          <li>(PDF 변환) 확인 <span class="arrow">›</span> (성공) 확인</li>
+        </ul>
+      </details>
+
+      <details class="sub" data-sub="5-2">
+        <summary>
+          <input type="checkbox" class="chk-sub" data-key="5-2" onclick="event.stopPropagation()">
+          <span class="sub-num">5-2</span>
+          <span class="sub-title">압수목록 (편철)</span>
+        </summary>
+        <ul class="path">
+          <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> (대상 압수물 체크박스 체크) <span class="arrow">›</span> 압수관련서식(드롭다운) <span class="arrow">›</span> 압수목록(클릭) <span class="arrow">›</span> 열기</li>
+          <li>편철 <span class="arrow">›</span> 확인 <span class="arrow">›</span> 확인 <span class="arrow">›</span> (PDF 변환) 확인 <span class="arrow">›</span> 확인(성공)</li>
+        </ul>
+      </details>
+
+      <details class="sub" data-sub="5-3">
+        <summary>
+          <input type="checkbox" class="chk-sub" data-key="5-3" onclick="event.stopPropagation()">
+          <span class="sub-num">5-3</span>
+          <span class="sub-title">압수목록교부 (결재올림)</span>
+        </summary>
+        <ul class="path">
+          <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> (대상 압수물 체크박스 체크) <span class="arrow">›</span> 압수관련서식(드롭다운) <span class="arrow">›</span> 압수목록 교부(클릭) <span class="arrow">›</span> 열기</li>
+          <li>(압수목록교부서 내용입력)</li>
+          <li>결재올림 <span class="arrow">›</span> 결재선지정(팀장) <span class="arrow">›</span> 확인</li>
+        </ul>
+      </details>
+
+      <details class="sub" data-sub="5-4">
+        <summary>
+          <input type="checkbox" class="chk-sub" data-key="5-4" onclick="event.stopPropagation()">
+          <span class="sub-num">5-4</span>
+          <span class="sub-title">임의제출 (편철)</span>
+        </summary>
+        <ul class="path">
+          <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> (대상 압수물 체크박스 체크) <span class="arrow">›</span> 압수관련서식(드롭다운) <span class="arrow">›</span> 임의제출(클릭) <span class="arrow">›</span> 열기</li>
+          <li>(상단) 진술자 확인 <span class="arrow">›</span> (팝업창 상대방 열람)</li>
+          <li>(제출자 인 란으로 커서이동)</li>
+          <li>(상단) 자필기재(클릭) <span class="arrow">›</span> (서명) <span class="arrow">›</span> 확인</li>
+          <li>(제출자 처분의견 란으로 커서이동)</li>
+          <li>(상단) 자필기재 <span class="arrow">›</span> (소유권포기 등 기재) <span class="arrow">›</span> 확인</li>
+          <li class="note">소유권 포기를 기재한 경우, 소유권포기서 별도 작성 불필요</li>
+          <li>(상단) 편철 <span class="arrow">›</span> (PDF 변환) <span class="arrow">›</span> 확인</li>
+        </ul>
+      </details>
+
+      <details class="sub" data-sub="5-5">
+        <summary>
+          <input type="checkbox" class="chk-sub" data-key="5-5" onclick="event.stopPropagation()">
+          <span class="sub-num">5-5</span>
+          <span class="sub-title">행정전자서명</span>
+        </summary>
+        <ul class="path">
+          <li>KICS <span class="arrow">›</span> 사건처리 <span class="arrow">›</span> 접수배당 <span class="arrow">›</span> 사건목록 <span class="arrow">›</span> 지역경찰사건목록</li>
+          <li>(대상사건 우클릭) <span class="arrow">›</span> 서식</li>
+          <li>작성문서(해당문서 클릭) <span class="arrow">›</span> 행정전자서명 <span class="arrow">›</span> 확인</li>
+          <li>(인증서 선택창) <span class="arrow">›</span> 사용할 인증서 선택 <span class="arrow">›</span> 비밀번호 입력 <span class="arrow">›</span> 확인</li>
+        </ul>
+      </details>
+
+    </div>
+  </div>
+
+  <button class="reset" id="resetBtn">체크 초기화</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'seizure-procedure-checklist-v1';
+const TOP_KEYS = ['1', '2', '3', '4'];
+const SUB_KEYS = ['5-1', '5-2', '5-3', '5-4', '5-5'];
+const ALL_KEYS = TOP_KEYS.concat(SUB_KEYS);
+
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) { /* 저장 불가 시 무시 */ }
+}
+
+let state = loadState();
+
+function updateProgress() {
+  const doneCount = ALL_KEYS.filter(k => state[k]).length;
+  const pct = Math.round((doneCount / ALL_KEYS.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = doneCount + ' / ' + ALL_KEYS.length + ' 완료';
+
+  const subDone = SUB_KEYS.filter(k => state[k]).length;
+  document.getElementById('subProgress').textContent = subDone + ' / ' + SUB_KEYS.length;
+}
+
+function applyState() {
+  TOP_KEYS.forEach(key => {
+    const box = document.querySelector('.chk[data-key="' + key + '"]');
+    const step = document.querySelector('.step[data-step="' + key + '"]');
+    box.checked = !!state[key];
+    step.classList.toggle('done', !!state[key]);
+  });
+  SUB_KEYS.forEach(key => {
+    const box = document.querySelector('.chk-sub[data-key="' + key + '"]');
+    const sub = document.querySelector('details.sub[data-sub="' + key + '"]');
+    box.checked = !!state[key];
+    sub.classList.toggle('done', !!state[key]);
+  });
+  updateProgress();
+}
+
+document.querySelectorAll('.chk').forEach(box => {
+  box.addEventListener('change', () => {
+    const key = box.dataset.key;
+    state[key] = box.checked;
+    box.closest('.step').classList.toggle('done', box.checked);
+    saveState(state);
+    updateProgress();
+  });
+});
+
+document.querySelectorAll('.chk-sub').forEach(box => {
+  box.addEventListener('change', () => {
+    const key = box.dataset.key;
+    state[key] = box.checked;
+    box.closest('details.sub').classList.toggle('done', box.checked);
+    saveState(state);
+    updateProgress();
+  });
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state = {};
+  saveState(state);
+  applyState();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+applyState();
+</script>
+</body>
+</html>
