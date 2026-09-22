@@ -64,12 +64,22 @@
   }
   .step.done { opacity: 0.55; }
 
+  .step summary::-webkit-details-marker { display: none; }
+  .step summary { list-style: none; }
   .step-head {
     display: flex;
     align-items: center;
     gap: 0.55rem;
     cursor: pointer;
   }
+  .step-head .chev {
+    margin-left: auto;
+    color: #9aa7b5;
+    font-size: 0.85rem;
+    transition: transform .15s ease;
+    flex: 0 0 auto;
+  }
+  details.step[open] .step-head .chev { transform: rotate(180deg); }
   .step-head input[type="checkbox"] {
     width: 1.15rem;
     height: 1.15rem;
@@ -204,62 +214,66 @@
   </div>
 
   <!-- 1단계 -->
-  <div class="step" data-step="1">
-    <label class="step-head">
-      <input type="checkbox" class="chk" data-key="1">
+  <details class="step" data-step="1">
+    <summary class="step-head">
+      <input type="checkbox" class="chk" data-key="1" onclick="event.stopPropagation()">
       <span class="num">1</span>
       <span class="title">해당사건 압수물 연결</span>
-    </label>
+      <span class="chev">▾</span>
+    </summary>
     <ul class="path">
       <li>KICS <span class="arrow">›</span> 사건처리 <span class="arrow">›</span> 접수배당 <span class="arrow">›</span> 사건목록 <span class="arrow">›</span> 지역경찰사건목록</li>
       <li>(해당사건 우클릭)</li>
       <li>우클릭메뉴 <span class="arrow">›</span> 압수물</li>
     </ul>
-  </div>
+  </details>
 
   <!-- 2단계 -->
-  <div class="step" data-step="2">
-    <label class="step-head">
-      <input type="checkbox" class="chk" data-key="2">
+  <details class="step" data-step="2">
+    <summary class="step-head">
+      <input type="checkbox" class="chk" data-key="2" onclick="event.stopPropagation()">
       <span class="num">2</span>
       <span class="title">압수대상자 등록</span>
-    </label>
+      <span class="chev">▾</span>
+    </summary>
     <ul class="path">
       <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> 대상자관리</li>
       <li>KICS 대상자목록 <span class="arrow">›</span> 압수대상자 체크박스 체크 <span class="arrow">›</span> 압수대상자 등록</li>
       <li>저장</li>
       <li>닫기</li>
     </ul>
-  </div>
+  </details>
 
   <!-- 3단계 -->
-  <div class="step" data-step="3">
-    <label class="step-head">
-      <input type="checkbox" class="chk" data-key="3">
+  <details class="step" data-step="3">
+    <summary class="step-head">
+      <input type="checkbox" class="chk" data-key="3" onclick="event.stopPropagation()">
       <span class="num">3</span>
       <span class="title">압수물 등록</span>
-    </label>
+      <span class="chev">▾</span>
+    </summary>
     <ul class="path">
       <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> 행추가</li>
       <li>필수항목 입력 <span class="arrow">›</span> 저장</li>
       <li>(팝업창) 확인</li>
     </ul>
-  </div>
+  </details>
 
   <!-- 4단계 -->
-  <div class="step" data-step="4">
-    <label class="step-head">
-      <input type="checkbox" class="chk" data-key="4">
+  <details class="step" data-step="4">
+    <summary class="step-head">
+      <input type="checkbox" class="chk" data-key="4" onclick="event.stopPropagation()">
       <span class="num">4</span>
       <span class="title">압수부 등재</span>
-    </label>
+      <span class="chev">▾</span>
+    </summary>
     <ul class="path">
       <li>압수물 <span class="arrow">›</span> 압수물목록 <span class="arrow">›</span> 대상 압수물 체크박스 체크 <span class="arrow">›</span> 압수업무선택(드롭다운) <span class="arrow">›</span> 압수물 등재(클릭)</li>
       <li>(압수물 등재하겠습니까 팝업창) 확인</li>
       <li>(메시지) 확인</li>
       <li class="note">압수물 목록 상태가 '승인'으로 변경됨</li>
     </ul>
-  </div>
+  </details>
 
   <!-- 5단계: 압수서류작성 -->
   <div class="step" data-step="5">
